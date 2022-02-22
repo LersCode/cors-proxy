@@ -21,22 +21,24 @@ app.use(
   })
 );
 app.all("/*", async (req, res) => {
-  logging(req);
+  logging(req.url);
   try {
     const apiRes = await needle(req.method, BASE_URL + req.url, req.body);
     res.status(200).json(apiRes.body);
+    logging("Proxy-Status 200");
   } catch (error) {
     res.status(500).json(error);
+    logging("Proxy-Status 500");
   }
 });
 
 app.listen(PORT, () => console.log("Server running on port " + PORT));
 
 //functions
-function logging(req){
+function logging(string){
   if(ENABLE_LOGGING)
   {
-    console.log('<' + getTimestamp() + '> ' + req.url);
+    console.log('<' + getTimestamp() + '> ' + string);
   }
 }
 
