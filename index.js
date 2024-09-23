@@ -1,4 +1,9 @@
+// Required
 require("dotenv").config("./.env");
+
+// Imports
+import logging from "./src/functions/logging.js";
+
 const express = require("express");
 const cors = require("cors");
 const needle = require("needle");
@@ -28,38 +33,16 @@ app.use(
 
 // All requests
 app.all("/*", async (req, res) => {
-  logging("request_url", req.url);
+  logging(ENABLE_LOGGING, `request_url ${req.url}`, STATUS_INFO);
   try {
     const apiRes = await needle(req.method, BASE_URL + req.url, req.body);
     res.status(200).send(apiRes.body);
     logging("Proxy-Status 200");
   } catch (error) {
     res.status(500).json(error);
-    logging("Proxy-Status 500");
-    logging("Proxy-Error", error);
+    logging(ENABLE_LOGGING, "Proxy-Status 500", STATUS_WARNING);
+    logging(ENABLE_LOGGING, `Proxy-Error ${error}`, STATUS_ERROR);
   }
 });
 
 app.listen(PORT, () => console.log("Server running on port " + PORT));
-
-//functions
-function logging(string) {
-  if (ENABLE_LOGGING) {
-    console.log("<" + getTimestamp() + "> " + string);
-  }
-}
-
-function getTimestamp() {
-  const date = new Date();
-  return (
-    date.getDate() +
-    "." +
-    (date.getMonth() + 1) +
-    "." +
-    date.getFullYear() +
-    "/" +
-    date.getHours() +
-    ":" +
-    date.getMinutes()
-  );
-}
